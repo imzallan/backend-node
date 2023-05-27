@@ -10,7 +10,7 @@ app.use(cors());
 const db = mysql.createConnection({
     host: '127.0.0.1',
     port: '3306',
-    database: 'dbportalmeraki',
+    database: 'usercredentials',
     user: 'root',
     password: 'root'
 });
@@ -33,7 +33,7 @@ app.post('/api/users', jsonParser, function (req, res) {
         res.status(500).json({ message: 'Erro interno do servidor' });
         return;
       }
-  
+      // Autenticação bem sucedida
       if (results.length > 0) {
         console.log('Autenticação bem-sucedida');
         res.status(200).json({ message: 'Autenticação bem-sucedida',  success: true, });
@@ -52,7 +52,7 @@ app.get('/', (re, res) => {
 
 // Exposição das Columns user_id e username da table Usuários para exposição no FrontEnd
 app.get('/api/users', (req, res) => {
-    const sql = 'SELECT user_id, username, role FROM Usuários';
+    const sql = 'SELECT name, role, photo FROM Usuários';
     db.query(sql, (err, data) => {
         if(err) return res.json(err);
         return res.json(data);
