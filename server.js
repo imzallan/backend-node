@@ -36,8 +36,7 @@ app.post('/api/users', jsonParser, function (req, res) {
   
       if (results.length > 0) {
         console.log('Autenticação bem-sucedida');
-        res.json({ success: true, message: 'Login bem-sucedido!' });
-        res.status(200).json({ message: 'Autenticação bem-sucedida' });
+        res.status(200).json({ message: 'Autenticação bem-sucedida',  success: true, });
       } else {
         // Autenticação falhou
         console.log('Autenticação mal-sucedida');
