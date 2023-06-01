@@ -2,25 +2,36 @@ const express = require('express');
 const mysql = require('mysql');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const helmet = require('helmet');
+require('dotenv').config(); // Carregar variáveis de ambiente a partir de um arquivo .env
+
 
 const app = express();
 app.use(cors());
+app.use(helmet());
+app.use(bodyParser.json());
+
 
 // Conectar com as credências do Banco de Dados
 const db = mysql.createConnection({
-    host: '127.0.0.1',
-    port: '3306',
-    database: 'usercredentials',
-    user: 'root',
-    password: 'root'
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD
 });
 
-// Configurar o body-parser para analisar o corpo das solicitações
-var jsonParser = bodyParser.json()
-//var urlencodedParser = bodyParser.urlencoded({ extended: false })
-
+// Iniciando validação de dado  
+const { body, validationResult } = require('express-validator');
 // Definir a rota POST para autenticação
-app.post('/api/users', jsonParser, function (req, res) {
+app.post('/api/users', [
+    body('username').notEmpty().trim(),
+    body('password').notEmpty().trim()
+  ], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     // Obter os dados de usuário e senha do corpo da solicitação
     const { username, password } = req.body;    
   
