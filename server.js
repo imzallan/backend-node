@@ -8,6 +8,7 @@ require('dotenv').config(); // Carregar variáveis de ambiente a partir de um ar
 
 const app = express();
 app.use(cors());
+// Configura automaticamente os cabeçalhos de segurança
 app.use(helmet());
 app.use(bodyParser.json());
 
