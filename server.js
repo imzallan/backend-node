@@ -3,6 +3,8 @@ const mysql = require('mysql');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 require('dotenv').config(); // Carregar variáveis de ambiente a partir de um arquivo .env
 
 
@@ -24,6 +26,7 @@ const db = mysql.createConnection({
 
 // Iniciando validação de dado  
 const { body, validationResult } = require('express-validator');
+
 // Definir a rota POST para autenticação
 app.post('/api/users', [
     body('username').notEmpty().trim(),
@@ -37,7 +40,7 @@ app.post('/api/users', [
     const { username, password } = req.body;    
   
     // Consultar o banco de dados para verificar se o usuário existe
-    const query = `SELECT * FROM Usuários WHERE username = ? AND password = ?`;
+    const query = `SELECT * FROM Users WHERE username = ? AND password = ?`;
     db.query(query, [username, password], (err, results) => {
       if (err) {
         // Ocorreu um erro ao executar a consulta
@@ -47,12 +50,19 @@ app.post('/api/users', [
       }
       // Autenticação bem sucedida
       if (results.length > 0) {
+        const generateSecretKey = () => {
+          return crypto.randomBytes(32).toString('hex');
+        };
         console.log('Autenticação bem-sucedida');
-        res.status(200).json({ message: 'Autenticação bem-sucedida',  success: true, data: results });
+        const token = jwt.sign({ username }, generateSecretKey(), { expiresIn: '1h' });
+        console.log('Token DEBUG: ', token);
+        res.status(200).json({ message: 'Autenticação bem-sucedida',  success: true, data: results, token: token });
+        return;
       } else {
         // Autenticação falhou
         console.log('Autenticação mal-sucedida');
         res.status(401).json({ message: 'Credenciais inválidas' });
+        return;
       }
     });
   });
@@ -64,7 +74,7 @@ app.get('/', (re, res) => {
 
 // Exposição das Columns user_id e username da table Usuários para exposição no FrontEnd
 app.get('/api/users', (req, res) => {
-    const sql = 'SELECT name, role, photo FROM Usuários';
+    const sql = 'SELECT name, role, photo FROM Users';
     db.query(sql, (err, data) => {
         if(err) return res.json(err);
         return res.json(data);
